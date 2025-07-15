@@ -1,6 +1,8 @@
 import { authenticate } from '../shopify.server';
 import axios from 'axios';
 import { PrismaClient } from '@prisma/client';
+import { json } from "@remix-run/node";
+
 
 const prisma = new PrismaClient();
 
@@ -145,7 +147,16 @@ async function fetchAllProducts(admin) {
             },
         });
 
-        const responseJson = await response.json();
+        const responseText = await response.text();
+        let responseJson;
+        
+        try {
+            responseJson = JSON.parse(responseText);
+        } catch (parseError) {
+            console.error('JSON Parse Error:', parseError.message);
+            console.error('Response text:', responseText.substring(0, 500));
+            throw new Error(`Failed to parse GraphQL response: ${parseError.message}`);
+        }
 
         if (responseJson.errors) {
             throw new Error(`GraphQL Error: ${JSON.stringify(responseJson.errors)}`);
@@ -191,20 +202,20 @@ async function syncProductsToAPI(products, shopDomain, apiKey) {
 function handleSyncError(error) {
     if (axios.isAxiosError(error)) {
         if (error.response) {
-            return Response.json({
+            return json({
                 success: false,
                 message: `API request failed: ${error.response.status} - ${error.response.statusText}`,
                 details: error.response.data
             });
         } else if (error.request) {
-            return Response.json({
+            return json({
                 success: false,
                 message: 'Network error: Unable to reach the API server'
             });
         }
     }
 
-    return Response.json({
+    return json({
         success: false,
         message: `Sync failed: ${error.message}`
     });
@@ -229,7 +240,7 @@ export const action = async ({ request }) => {
         
         const syncResult = await syncProductsToAPI(products, shopDomain, apiKeyRecord.api_key);
         
-        return Response.json({
+        return json({
             success: true,
             message: `Successfully synced ${products.length} products from ${shopDomain}`,
             shopDomain,

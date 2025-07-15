@@ -1,4 +1,6 @@
 // app/routes/_index.jsx
+import { json } from "@remix-run/node";
+// app/routes/_index.jsx
 import { Form, useActionData, useNavigation } from "@remix-run/react";
 import React, { useState, useEffect } from "react";
 import { PrismaClient } from '@prisma/client';
@@ -32,7 +34,7 @@ export async function action({ request }) {
 
     if (actionType === "saveApiKey") {
       if (!apiKey || apiKey.trim() === "") {
-        return Response.json({ error: "API key is required" }, { status: 400 });
+        return json({ error: "API key is required" }, { status: 400 });
       }
 
       try {
@@ -60,30 +62,30 @@ export async function action({ request }) {
           });
         }
 
-        return Response.json({
+        return json({
           success: true,
           message: "API key saved successfully! You can now proceed to sync your products.",
           actionType: "saveApiKey"
         });
       } catch (dbError) {
         console.error("Database error:", dbError);
-        return Response.json({ error: "Database operation failed. Please try again." }, { status: 500 });
+        return json({ error: "Database operation failed. Please try again." }, { status: 500 });
       }
     }
 
     if (actionType === "enableTheme") {
       await new Promise(resolve => setTimeout(resolve, 1500));
-      return Response.json({
+      return json({
         success: true,
         message: "Ready to integrate! Watch the demo to see how to add search to your theme.",
         actionType: "enableTheme"
       });
     }
 
-    return Response.json({ error: "Invalid action type" }, { status: 400 });
+    return json({ error: "Invalid action type" }, { status: 400 });
   } catch (error) {
     console.error("Error in action:", error);
-    return Response.json({ error: "An unexpected error occurred. Please try again." }, { status: 500 });
+    return json({ error: "An unexpected error occurred. Please try again." }, { status: 500 });
   }
 }
 
