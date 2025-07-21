@@ -3,7 +3,7 @@
 client_id = "af7e0502566d0183ca357fe25bbe8b8e"
 name = "Tensor Search"
 handle = "tensor-search"
-application_url = "https://tensor-shopify-app.onrender.com/"
+application_url = "https://tensor-app.onrender.com/"
 embedded = true
 
 [build]
@@ -20,12 +20,25 @@ api_version = "2025-07"
   topics = [ "app/scopes_update" ]
   uri = "/webhooks/app/scopes_update"
 
+  # Mandatory privacy webhooks for GDPR/CCPA compliance
+  [[webhooks.subscriptions]]
+  topics = [ "customers/data_request" ]
+  uri = "/webhooks/customers/data_request"
+
+  [[webhooks.subscriptions]]
+  topics = [ "customers/redact" ]
+  uri = "/webhooks/customers/redact"
+
+  [[webhooks.subscriptions]]
+  topics = [ "shop/redact" ]
+  uri = "/webhooks/shop/redact"
+
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
 scopes = "write_products"
 
 [auth]
-redirect_urls = [ "https://tensor-shopify-app.onrender.com/api/auth" ]
+redirect_urls = [ "https://tensor-app.onrender.com/api/auth" ]
 
 [pos]
 embedded = false
