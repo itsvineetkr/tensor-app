@@ -38,7 +38,6 @@ if (host === "localhost") {
 }
 
 export default defineConfig({
-  base: "/parked/",
   server: {
     allowedHosts: [host],
     cors: {
@@ -67,6 +66,8 @@ export default defineConfig({
   ],
   build: {
     assetsInlineLimit: 0,
+    outDir: "public/build",
+    assetsDir: "",
   },
   optimizeDeps: {
     include: ["@shopify/app-bridge-react", "@shopify/polaris"],

@@ -3,7 +3,7 @@
 client_id = "af7e0502566d0183ca357fe25bbe8b8e"
 name = "Tensor Search"
 handle = "tensor-search"
-application_url = "https://example.com/"
+application_url = "https://tensor-shopify-app.onrender.com/"
 embedded = true
 
 [build]
@@ -25,7 +25,7 @@ api_version = "2025-07"
 scopes = "write_products"
 
 [auth]
-redirect_urls = [ "https://example.com/api/auth" ]
+redirect_urls = [ "https://tensor-shopify-app.onrender.com/api/auth" ]
 
 [pos]
 embedded = false
