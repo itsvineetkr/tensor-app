@@ -1,8 +1,10 @@
 import { authenticate } from "../shopify.server";
-import db from "../db.server";
 
 export const action = async ({ request }) => {
   const { shop, session, topic } = await authenticate.webhook(request);
+  
+  // Dynamic import to avoid client-side bundling issues
+  const { default: db } = await import("../db.server");
 
   console.log(`Received ${topic} webhook for ${shop}`);
 
