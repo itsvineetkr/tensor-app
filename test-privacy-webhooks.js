@@ -47,10 +47,11 @@ webhooks.forEach(testWebhook);
 
 console.log('\n📋 Next Steps:');
 console.log('1. Deploy your app: npm run deploy');
-console.log('2. Test webhooks using Shopify CLI:');
+console.log('2. Reinstall your app in a development store to trigger webhook registration');
+console.log('3. Test webhooks using Shopify CLI:');
 webhooks.forEach(webhook => {
   console.log(`   shopify app generate webhook --topic=${webhook.topic}`);
 });
-console.log('\n3. Verify webhook responses in your app logs');
+console.log('\n4. Verify webhook responses in your app logs');
 console.log('\n⚠️  Important: These webhooks are mandatory for GDPR/CCPA compliance');
-console.log('   Make sure to implement proper data handling in production!');
+console.log('   Privacy webhooks are registered automatically via afterAuth hook when app is installed!');

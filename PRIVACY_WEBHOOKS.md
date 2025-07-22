@@ -23,21 +23,35 @@ Your app now handles the following required privacy webhooks:
 
 ## 📝 Configuration
 
-The webhooks are configured in `shopify.app.toml`:
+The webhooks are configured programmatically in `app/shopify.server.js` using the `webhooks` and `hooks.afterAuth` configuration:
 
-```toml
-[[webhooks.subscriptions]]
-topics = [ "customers/data_request" ]
-uri = "/webhooks/customers/data_request"
-
-[[webhooks.subscriptions]]
-topics = [ "customers/redact" ]
-uri = "/webhooks/customers/redact"
-
-[[webhooks.subscriptions]]
-topics = [ "shop/redact" ]
-uri = "/webhooks/shop/redact"
+```javascript
+const shopify = shopifyApp({
+  // ... other config
+  hooks: {
+    afterAuth: async ({ session }) => {
+      // Register mandatory privacy webhooks for GDPR/CCPA compliance
+      shopify.registerWebhooks({ session });
+    },
+  },
+  webhooks: {
+    CUSTOMERS_DATA_REQUEST: {
+      deliveryMethod: "http",
+      callbackUrl: "/webhooks/customers/data_request",
+    },
+    CUSTOMERS_REDACT: {
+      deliveryMethod: "http", 
+      callbackUrl: "/webhooks/customers/redact",
+    },
+    SHOP_REDACT: {
+      deliveryMethod: "http",
+      callbackUrl: "/webhooks/shop/redact", 
+    },
+  },
+});
 ```
+
+**Note:** Privacy webhooks cannot be configured as app-specific webhooks in `shopify.app.toml`. They must be registered programmatically as shop-specific webhooks.
 
 ## 🛠️ Testing
 
