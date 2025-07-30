@@ -1,7 +1,7 @@
 // app/routes/_index.jsx
 import { json } from "@remix-run/node";
 // app/routes/_index.jsx
-import { Form, useActionData, useNavigation } from "@remix-run/react";
+import { Form, useActionData, useNavigation, useLoaderData } from "@remix-run/react";
 import React, { useState, useEffect } from "react";
 import { PrismaClient } from '@prisma/client';
 import {
@@ -22,6 +22,11 @@ import {
 import { authenticate } from "../shopify.server";
 
 const prisma = new PrismaClient();
+
+export async function loader({ request }) {
+  const { session } = await authenticate.admin(request);
+  return json({ shopDomain: session.shop });
+}
 
 export async function action({ request }) {
   try {
@@ -90,6 +95,7 @@ export async function action({ request }) {
 }
 
 export default function AdminPanel() {
+  const { shopDomain } = useLoaderData();
   const [currentStep, setCurrentStep] = useState(1);
   const [apiKey, setApiKey] = useState("");
   const [completedSteps, setCompletedSteps] = useState([]);
@@ -127,11 +133,11 @@ export default function AdminPanel() {
     },
     {
       id: 4,
-      title: "Watch Demo - Add Search to Theme",
-      description: "Learn how to integrate search functionality into your store theme",
+      title: "Add Extension & Watch Demo",
+      description: "Add the search extension to your theme and learn how to customize it",
       icon: <Play style={{ width: "20px", height: "20px" }} />,
-      action: "Watch Demo",
-      url: "https://www.youtube.com/watch?v=your-demo-video-id",
+      action: "Add & Watch Demo",
+      url: "https://www.youtube.com/watch?app=desktop&v=J38GsPXLNVE",
     },
     {
       id: 5,
@@ -141,6 +147,9 @@ export default function AdminPanel() {
       action: "Finish Setup",
     },
   ];
+
+  // const { session } = await authenticate.admin(request);
+  // const shopDomain = session.shop;
 
   const handleProductSync = async () => {
     try {
@@ -281,6 +290,12 @@ export default function AdminPanel() {
     }, 5000);
   };
 
+  const handleAddExtension = () => {
+    const deepLinkUrl = `https://${shopDomain}/admin/themes/current/editor?template=index&addAppBlockId=af7e0502566d0183ca357fe25bbe8b8e/search&target=newAppsSection`;
+    window.open(deepLinkUrl, "_blank");
+    showNotificationMessage("Opening theme editor to add the search extension to your store.", "info");
+  };
+
   const handleStepAction = (stepId) => {
     if (stepId === 1) {
       window.open("https://search.tensorsolution.in/", "_blank");
@@ -292,7 +307,7 @@ export default function AdminPanel() {
 
     if (stepId === 4) {
       // Open demo video
-      window.open("https://www.youtube.com/watch?v=your-demo-video-id", "_blank"); // Replace with your actual demo video URL
+      window.open("https://www.youtube.com/watch?app=desktop&v=J38GsPXLNVE", "_blank"); // Replace with your actual demo video URL
       setCompletedSteps(prev => [...prev, 4]);
       setCurrentStep(5);
       showNotificationMessage("Demo opened! Follow the video to integrate search into your theme.", "info");
@@ -939,19 +954,36 @@ export default function AdminPanel() {
                     </button>
                   )}
 
-                  {/* Step 4: Watch Demo */}
+                  {/* Step 4: Add Extension and Watch Demo */}
                   {currentStep === 4 && (
-                    <button
-                      onClick={() => handleStepAction(4)}
-                      className="button-hover"
-                      style={{
-                        ...styles.button,
-                        ...styles.buttonPrimary,
-                      }}
-                    >
-                      <Play style={{ width: "16px", height: "16px" }} />
-                      <span>Watch Demo Video</span>
-                    </button>
+                    <div>
+                      {/* Add Extension Button */}
+                      <button
+                        onClick={handleAddExtension}
+                        className="button-hover"
+                        style={{
+                          ...styles.button,
+                          ...styles.buttonSecondary,
+                          marginBottom: "12px",
+                        }}
+                      >
+                        <Settings style={{ width: "16px", height: "16px" }} />
+                        <span>Add Extension to Theme</span>
+                      </button>
+                      
+                      {/* Demo Video Button */}
+                      <button
+                        onClick={() => handleStepAction(4)}
+                        className="button-hover"
+                        style={{
+                          ...styles.button,
+                          ...styles.buttonPrimary,
+                        }}
+                      >
+                        <Play style={{ width: "16px", height: "16px" }} />
+                        <span>Watch Demo Video</span>
+                      </button>
+                    </div>
                   )}
 
                   {/* Step 5: Completion */}

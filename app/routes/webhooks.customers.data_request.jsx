@@ -5,29 +5,21 @@ export const action = async ({ request }) => {
 
   console.log(`Received ${topic} webhook for ${shop}`);
 
-  // Handle customer data request for GDPR compliance
-  // This webhook is triggered when a customer requests their personal data
-  // You should:
-  // 1. Log the request for compliance purposes
-  // 2. Gather and return customer data if your app stores any
-  // 3. Send the data to the customer via the method specified in the request
-
+  // This app does not store any customer personal data
+  // We only work with product data for search functionality
+  // Therefore, we have no customer data to provide
+  
   try {
-    // Log the data request for compliance tracking
     console.log('Customer data request received:', {
       shop,
       customerId: payload.customer?.id,
-      ordersRequested: payload.orders_requested || [],
       timestamp: new Date().toISOString(),
+      response: 'No customer data stored by this app'
     });
 
-    // TODO: Implement your data collection logic here
-    // Example: Query your database for any customer data you've stored
-    // const customerData = await db.customerData.findMany({
-    //   where: { customerId: payload.customer?.id, shop }
-    // });
-
-    // TODO: Send the collected data to the customer
+    // Return success since we've acknowledged the request
+    // but we don't store any customer data to provide
+    return new Response(null, { status: 200 });
     // This is typically done via email or through Shopify's API
 
     console.log('Customer data request processed successfully');
