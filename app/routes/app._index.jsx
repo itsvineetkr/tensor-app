@@ -883,7 +883,6 @@ export default function AdminPanel() {
                   fontWeight: "500"
                 }}
               >
-                View Details →
               </a>
             </div>
           </div>
