@@ -20,12 +20,29 @@ import {
   Play,
 } from "lucide-react";
 import { authenticate } from "../shopify.server";
+import { getBillingSubscription, createOrUpdateSubscription, requireActiveBilling } from "../utils/billing.server";
 
 const prisma = new PrismaClient();
 
 export async function loader({ request }) {
   const { session } = await authenticate.admin(request);
-  return json({ shopDomain: session.shop });
+  
+  // Ensure billing is active
+  await requireActiveBilling(session);
+  
+  // Ensure billing subscription exists
+  let subscription = await getBillingSubscription(session.shop);
+  if (!subscription) {
+    subscription = await createOrUpdateSubscription(session.shop, {
+      planName: "FREE",
+      status: "ACTIVE",
+    });
+  }
+  
+  return json({ 
+    shopDomain: session.shop,
+    subscription 
+  });
 }
 
 export async function action({ request }) {
@@ -95,7 +112,7 @@ export async function action({ request }) {
 }
 
 export default function AdminPanel() {
-  const { shopDomain } = useLoaderData();
+  const { shopDomain, subscription } = useLoaderData();
   const [currentStep, setCurrentStep] = useState(1);
   const [apiKey, setApiKey] = useState("");
   const [completedSteps, setCompletedSteps] = useState([]);
@@ -826,6 +843,50 @@ export default function AdminPanel() {
           <p style={styles.subtitle}>
             Configure your intelligent search solution in 5 simple steps
           </p>
+        </div>
+
+        {/* Billing Status */}
+        <div style={{
+          ...styles.card,
+          marginBottom: "30px",
+          background: "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)",
+          border: "1px solid #0ea5e9",
+          padding: "15px 20px"
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div style={{
+              background: "#0ea5e9",
+              borderRadius: "50%",
+              width: "24px",
+              height: "24px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center"
+            }}>
+              <CheckCircle style={{ width: "14px", height: "14px", color: "white" }} />
+            </div>
+            <div>
+              <span style={{ fontWeight: "600", color: "#0c4a6e", fontSize: "14px" }}>
+                Free Plan Active
+              </span>
+              <span style={{ color: "#0369a1", fontSize: "12px", marginLeft: "10px" }}>
+                Shop: {shopDomain}
+              </span>
+            </div>
+            <div style={{ marginLeft: "auto" }}>
+              <a 
+                href="/app/billing" 
+                style={{
+                  color: "#0ea5e9",
+                  textDecoration: "none",
+                  fontSize: "12px",
+                  fontWeight: "500"
+                }}
+              >
+                View Details →
+              </a>
+            </div>
+          </div>
         </div>
 
         {/* Progress Bar */}

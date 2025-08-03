@@ -2,6 +2,7 @@ import { authenticate } from '../shopify.server';
 import axios from 'axios';
 import { PrismaClient } from '@prisma/client';
 import { json } from "@remix-run/node";
+import { requireActiveBilling } from '../utils/billing.server';
 
 
 const prisma = new PrismaClient();
@@ -227,6 +228,9 @@ export const action = async ({ request }) => {
     }
 
     const { admin, session } = await authenticate.admin(request);
+
+    // Check billing status
+    await requireActiveBilling(session);
 
     try {
         const shopDomain = session.shop;

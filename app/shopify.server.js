@@ -3,6 +3,7 @@ import {
   ApiVersion,
   AppDistribution,
   shopifyApp,
+  BillingInterval,
 } from "@shopify/shopify-app-remix/server";
 import { PrismaSessionStorage } from "@shopify/shopify-app-session-storage-prisma";
 import prisma from "./db.server";
@@ -16,6 +17,13 @@ const shopify = shopifyApp({
   authPathPrefix: "/auth",
   sessionStorage: new PrismaSessionStorage(prisma),
   distribution: AppDistribution.AppStore,
+  billing: {
+    "Free Plan": {
+      amount: 0,
+      currencyCode: "USD",
+      interval: BillingInterval.Every30Days,
+    },
+  },
   future: {
     unstable_newEmbeddedAuthStrategy: true,
     removeRest: true,
@@ -24,9 +32,44 @@ const shopify = shopifyApp({
     afterAuth: async ({ session }) => {
       // Register mandatory privacy webhooks for GDPR/CCPA compliance
       shopify.registerWebhooks({ session });
+      
+      // Initialize billing subscription for new shops
+      try {
+        const existingSubscription = await prisma.billingSubscription.findUnique({
+          where: { shop: session.shop }
+        });
+        
+        if (!existingSubscription) {
+          await prisma.billingSubscription.create({
+            data: {
+              shop: session.shop,
+              planName: "FREE",
+              status: "ACTIVE",
+            }
+          });
+        }
+      } catch (error) {
+        console.error("Error creating billing subscription:", error);
+      }
     },
   },
   webhooks: {
+    APP_SUBSCRIPTIONS_UPDATE: {
+      deliveryMethod: "http",
+      callbackUrl: "/webhooks/billing",
+    },
+    APP_PURCHASES_ONE_TIME_UPDATE: {
+      deliveryMethod: "http",
+      callbackUrl: "/webhooks/billing",
+    },
+    CUSTOMERS_DATA_REQUEST: {
+      deliveryMethod: "http",
+      callbackUrl: "/webhooks/customers/data_request",
+    },
+    CUSTOMERS_REDACT: {
+      deliveryMethod: "http",
+      callbackUrl: "/webhooks/customers/redact",
+    },
     SHOP_REDACT: {
       deliveryMethod: "http",
       callbackUrl: "/webhooks/shop/redact", 
@@ -45,3 +88,4 @@ export const unauthenticated = shopify.unauthenticated;
 export const login = shopify.login;
 export const registerWebhooks = shopify.registerWebhooks;
 export const sessionStorage = shopify.sessionStorage;
+export const billing = shopify.billing;

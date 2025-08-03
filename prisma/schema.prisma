@@ -37,3 +37,17 @@ model APIKeys {
   api_key         String
   savedAt         DateTime @default(now())
 }
+
+model BillingSubscription {
+  id                  Int      @id @default(autoincrement())
+  shop                String   @unique
+  subscriptionId      String?
+  planName            String   @default("FREE")
+  status              String   @default("ACTIVE")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  trialStartsAt       DateTime?
+  trialEndsAt         DateTime?
+  billingOn           DateTime?
+  test                Boolean  @default(false)
+}
